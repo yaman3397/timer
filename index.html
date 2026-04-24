@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  :root { --red: #ff3b30; --bg: #0d0d0d; --gray: #2c2c2e; }
+  body { background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+  
+  .pill-container { position: relative; width: 480px; height: 110px; display: flex; align-items: center; justify-content: center; }
+
+  .progress-svg { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: visible; }
+  .track { fill: none; stroke: var(--gray); stroke-width: 6; }
+  .bar { fill: none; stroke: var(--red); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; transform: scaleX(-1) rotate(180deg); transform-origin: center; }
+
+  /* Tightened Content Grouping */
+  .content { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; /* Center everything together */
+    gap: 35px; /* Manually control the gap between time and buttons */
+    z-index: 2;
+    color: white;
+  }
+  
+  .time-group { display: flex; align-items: center; gap: 0px; }
+  .time-group input { 
+    background: transparent; border: none; color: white; width: 60px; text-align: center; 
+    font-size: 42px; font-weight: bold; outline: none; padding: 0;
+  }
+  .time-group span { color: #444; font-size: 32px; font-weight: bold; margin-bottom: 4px; }
+  input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .controls { display: flex; align-items: center; gap: 18px; }
+  .control-btn { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; outline: none; }
+  
+  .play-icon { fill: white; width: 26px; height: 26px; }
+  .reset-icon { stroke: #888; stroke-width: 4.5; fill: none; width: 18px; height: 18px; transition: stroke 0.2s; }
+  .control-btn:hover .reset-icon { stroke: white; }
+</style>
+</head>
+<body>
+
+<div class="pill-container">
+  <svg class="progress-svg" viewBox="0 0 480 110">
+    <path class="track" d="M55,5 L425,5 A50,50 0 0,1 425,105 L55,105 A50,50 0 0,1 55,5" />
+    <path id="prog" class="bar" d="M55,5 L425,5 A50,50 0 0,1 425,105 L55,105 A50,50 0 0,1 55,5" />
+  </svg>
+
+  <div class="content">
+    <!-- Time Inputs -->
+    <div class="time-group">
+      <input type="number" id="h" value="00"><span>:</span>
+      <input type="number" id="m" value="00"><span>:</span>
+      <input type="number" id="s" value="20">
+    </div>
+    
+    <!-- Control Buttons -->
+    <div class="controls">
+      <button class="control-btn" onclick="toggleTimer()">
+        <svg class="play-icon" viewBox="0 0 24 24">
+          <path id="iconPath" d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+      
+      <button class="control-btn" onclick="resetToZero()">
+        <svg class="reset-icon" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let timer;
+  let isRunning = false;
+  let totalSeconds = 0;
+  let timeLeft = 0;
+  
+  const prog = document.getElementById('prog');
+  const path = document.getElementById('iconPath');
+  const hIn = document.getElementById('h'), mIn = document.getElementById('m'), sIn = document.getElementById('s');
+  const length = prog.getTotalLength();
+
+  prog.style.strokeDasharray = length;
+  prog.style.strokeDashoffset = 0;
+
+  function toggleTimer() {
+    if (!isRunning) start();
+    else pause();
+  }
+
+  function start() {
+    if (timeLeft <= 0) {
+      timeLeft = (parseInt(hIn.value) || 0) * 3600 + (parseInt(mIn.value) || 0) * 60 + (parseInt(sIn.value) || 0);
+      totalSeconds = timeLeft;
+    }
+    
+    if (timeLeft <= 0) return;
+
+    isRunning = true;
+    hIn.disabled = mIn.disabled = sIn.disabled = true;
+    path.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); 
+
+    timer = setInterval(() => {
+      timeLeft--;
+      const offset = length - (timeLeft / totalSeconds) * length;
+      prog.style.strokeDashoffset = offset;
+
+      hIn.value = String(Math.floor(timeLeft / 3600)).padStart(2, '0');
+      mIn.value = String(Math.floor((timeLeft % 3600) / 60)).padStart(2, '0');
+      sIn.value = String(timeLeft % 60).padStart(2, '0');
+
+      if (timeLeft <= 0) resetToZero();
+    }, 1000);
+  }
+
+  function pause() {
+    clearInterval(timer);
+    isRunning = false;
+    hIn.disabled = mIn.disabled = sIn.disabled = false;
+    path.setAttribute('d', 'M8 5v14l11-7z');
+  }
+
+  function resetToZero() {
+    clearInterval(timer);
+    isRunning = false;
+    timeLeft = 0;
+    totalSeconds = 0;
+    hIn.value = mIn.value = sIn.value = "00";
+    hIn.disabled = mIn.disabled = sIn.disabled = false;
+    path.setAttribute('d', 'M8 5v14l11-7z');
+    prog.style.strokeDashoffset = length;
+  }
+</script>
+
+<script>
+  // 1. On load, check the URL for a specific time (?t=HH:MM:SS)
+  window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const timeParam = urlParams.get('t'); // Looks for "t" in the URL
+    
+    if (timeParam) {
+      const parts = timeParam.split(':');
+      if (parts.length === 3) {
+        document.getElementById('h').value = parts[0];
+        document.getElementById('m').value = parts[1];
+        document.getElementById('s').value = parts[2];
+      }
+    }
+  };
+
+  // 2. Add a way for you to "Get the URL" after you set a custom time
+  function generateShareLink() {
+    const h = document.getElementById('h').value.padStart(2, '0');
+    const m = document.getElementById('m').value.padStart(2, '0');
+    const s = document.getElementById('s').value.padStart(2, '0');
+    const newURL = window.location.origin + window.location.pathname + `?t=${h}:${m}:${s}`;
+    
+    // Copy this URL to your clipboard so you can paste it into Confluence
+    prompt("Copy this URL for your Confluence iFrame settings:", newURL);
+  }
+</script>
+
+
+</body>
+</html>
