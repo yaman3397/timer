@@ -93,25 +93,17 @@
   prog.style.strokeDashoffset = 0;
 
   window.onload = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryTime = urlParams.get('t'); // Still supports ?t=00:05:00
-    const hashValue = window.location.hash.substring(1); // Supports #5
+    // window.location.search will return "?5"
+    // .substring(1) removes the "?" to leave just "5"
+    const val = window.location.search.substring(1); 
 
-    if (hashValue && !isNaN(hashValue)) {
-        // If URL is .../timer/#5, set minutes to 5
+    if (val && !isNaN(val)) {
         hIn.value = "00";
-        mIn.value = hashValue.padStart(2, '0');
+        mIn.value = val.padStart(2, '0');
         sIn.value = "00";
-    } else if (queryTime) {
-        // Standard HH:MM:SS format
-        const p = queryTime.split(':');
-        if (p.length === 3) { 
-            hIn.value = p[0].padStart(2,'0'); 
-            mIn.value = p[1].padStart(2,'0'); 
-            sIn.value = p[2].padStart(2,'0'); 
-        }
     }
 };
+
 
 
   function toggleTimer() { !isRunning ? start() : pause(); }
