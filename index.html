@@ -4,7 +4,6 @@
 <style>
   :root { --red: #ff3b30; --gray: #e5e5ea; }
   
-  /* Force a solid white background for the entire frame */
   html, body { 
     background-color: #ffffff !important; 
     display: flex; 
@@ -12,54 +11,52 @@
     align-items: center; 
     height: 100vh; 
     margin: 0; 
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    font-family: -apple-system, sans-serif; 
     overflow: hidden; 
   }
   
-  /* The White Pill Container */
+  /* Ultra-compact Mini Pill */
   .pill-container { 
     position: relative; 
-    width: 480px; 
-    height: 110px; 
+    width: 210px; 
+    height: 48px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     background-color: #ffffff; 
-    border-radius: 55px; 
-    border: 2px solid #eeeeee; /* Subtle border for definition */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-radius: 24px; 
+    border: 1.2px solid #eeeeee; 
+    box-shadow: 0 1px 5px rgba(0,0,0,0.05);
   }
 
   .progress-svg { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: visible; }
-  .track { fill: none; stroke: var(--gray); stroke-width: 6; }
-  .bar { fill: none; stroke: var(--red); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear; transform: scaleX(-1) rotate(180deg); transform-origin: center; }
+  .track { fill: none; stroke: var(--gray); stroke-width: 4; }
+  .bar { fill: none; stroke: var(--red); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s linear; transform: scaleX(-1) rotate(180deg); transform-origin: center; }
 
-  /* Black Content for readability */
-  .content { display: flex; align-items: center; justify-content: center; gap: 30px; z-index: 2; color: #000000; width: 100%; }
+  .content { display: flex; align-items: center; justify-content: center; gap: 8px; z-index: 2; color: #000000; width: 100%; }
   
   .time-group { display: flex; align-items: center; }
   .time-group input { 
-    background: transparent; border: none; color: #000000; width: 62px; text-align: center; 
-    font-size: 42px; font-weight: 800; outline: none; padding: 0;
+    background: transparent; border: none; color: #000000; width: 30px; text-align: center; 
+    font-size: 20px; font-weight: 800; outline: none; padding: 0;
   }
-  .time-group span { color: #bbbbbb; font-size: 32px; font-weight: bold; margin-bottom: 4px; }
+  .time-group span { color: #bbbbbb; font-size: 16px; font-weight: bold; margin-bottom: 1px; }
   input::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-  .controls { display: flex; align-items: center; gap: 15px; }
-  .control-btn { background: transparent; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; outline: none; }
+  .controls { display: flex; align-items: center; gap: 6px; }
+  .control-btn { background: transparent; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; outline: none; }
   
-  .play-icon { fill: #000000; width: 28px; height: 28px; }
-  .reset-icon { stroke: #bbbbbb; stroke-width: 4.5; fill: none; width: 20px; height: 20px; transition: stroke 0.2s; }
+  .play-icon { fill: #000000; width: 16px; height: 16px; }
+  .reset-icon { stroke: #bbbbbb; stroke-width: 5; fill: none; width: 12px; height: 12px; }
   .control-btn:hover .reset-icon { stroke: #ff3b30; }
 </style>
 </head>
 <body>
 
 <div class="pill-container">
-  <svg class="progress-svg" viewBox="0 0 480 110">
-    <path class="track" d="M55,5 L425,5 A50,50 0 0,1 425,105 L55,105 A50,50 0 0,1 55,5" />
-    <path id="prog" class="bar" d="M55,5 L425,5 A50,50 0 0,1 425,105 L55,105 A50,50 0 0,1 55,5" />
+  <svg class="progress-svg" viewBox="0 0 210 48">
+    <path class="track" d="M25,4 L185,4 A20,20 0 0,1 185,44 L25,44 A20,20 0 0,1 25,4" />
+    <path id="prog" class="bar" d="M25,4 L185,4 A20,20 0 0,1 185,44 L25,44 A20,20 0 0,1 25,4" />
   </svg>
 
   <div class="content">
@@ -122,17 +119,11 @@
     
     timer = setInterval(() => {
       timeLeft--;
-      const offset = length - (timeLeft / totalSeconds) * length;
-      prog.style.strokeDashoffset = offset;
-
+      prog.style.strokeDashoffset = length - (timeLeft / totalSeconds) * length;
       hIn.value = String(Math.floor(timeLeft / 3600)).padStart(2, '0');
       mIn.value = String(Math.floor((timeLeft % 3600) / 60)).padStart(2, '0');
       sIn.value = String(timeLeft % 60).padStart(2, '0');
-
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        resetToZero();
-      }
+      if (timeLeft <= 0) { clearInterval(timer); resetToZero(); }
     }, 1000);
   }
 
@@ -150,7 +141,7 @@
     hIn.value = mIn.value = sIn.value = "00";
     hIn.disabled = mIn.disabled = sIn.disabled = false;
     path.setAttribute('d', 'M8 5v14l11-7z');
-    prog.style.strokeDashoffset = 0; // Solid gray bar when reset
+    prog.style.strokeDashoffset = 0;
   }
 </script>
 </body>
